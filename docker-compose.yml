@@ -8,8 +8,8 @@ services:
       - "9000:9000"
     environment:
       - NODE_ENV=production
-      - API_URL=${API_URL:-http://localhost:9000}
-      - SERVICE_FQDN_COBALT_9000=${API_URL:-localhost}
+      - API_URL=https://download.cohook.com
+      - SERVICE_FQDN_COBALT_API_9000=download.cohook.com
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9000/api/serverInfo", "||", "exit", "1"]
@@ -17,3 +17,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - coolify.managed=true
+      - traefik.enable=true
+      - "traefik.http.routers.cobalt-api.rule=Host(`download.cohook.com`)"
+      - "traefik.http.routers.cobalt-api.entryPoints=http"
+      - "traefik.http.services.cobalt-api.loadbalancer.server.port=9000"
