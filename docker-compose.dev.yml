@@ -35,6 +35,8 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - SERVICE_FQDN_COBALTWEB_3000=localhost:3000
+      - SERVICE_URL_COBALTWEB=http://localhost:3000
     depends_on:
       - cobalt-api
     restart: unless-stopped
