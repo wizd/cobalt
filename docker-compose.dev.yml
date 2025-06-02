@@ -1,0 +1,56 @@
+version: '3.8'
+
+# 开发版本的 Docker Compose 配置
+# 使用本地构建而不是 Docker Hub 镜像
+# 用法: docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  cobalt-api:
+    image: wizdy/cobalt-api:latest
+    container_name: cobalt-api-dev
+    ports:
+      - "9000:9000"
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:9000
+      - CORS_URL=http://localhost:3000
+      - CORS_WILDCARD=0
+      - RATELIMIT_WINDOW=60
+      - RATELIMIT_MAX=50
+      - DURATION_LIMIT=10800
+    restart: unless-stopped
+    labels:
+      - coolify.managed=false
+
+  cobalt-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        - WEB_DEFAULT_API=http://localhost:9000
+        - WEB_HOST=localhost:3000
+        # - WEB_PLAUSIBLE_HOST=  # 开发环境一般不需要分析
+    container_name: cobalt-web-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - cobalt-api
+    restart: unless-stopped
+    labels:
+      - coolify.managed=false
+
+  # 可选：添加开发工具容器
+  # portainer:
+  #   image: portainer/portainer-ce:latest
+  #   container_name: portainer-dev
+  #   ports:
+  #     - "9443:9443"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - portainer_data:/data
+  #   restart: unless-stopped
+
+# volumes:
+#   portainer_data: 
