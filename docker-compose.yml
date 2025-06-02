@@ -9,6 +9,7 @@ services:
     environment:
       - NODE_ENV=production
       - API_URL=${API_URL:-http://localhost:9000}
+      - SERVICE_FQDN_COBALT_9000=${SERVICE_FQDN_COBALT_9000:-localhost}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9000/api/serverInfo", "||", "exit", "1"]
