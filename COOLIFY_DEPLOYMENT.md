@@ -22,6 +22,7 @@
 - **端口**: 3000
 - **域名**: `cobalt.cohook.com`
 - **功能**: 前端界面，使用 Nginx 提供静态文件服务
+- **特性**: 包含 .git 目录用于版本信息追踪
 
 ### 环境变量配置
 
@@ -76,6 +77,19 @@ docker-compose up -d cobalt-web
 
 ## 高级配置
 
+### Docker 构建特性
+
+#### Web 前端构建
+- **多阶段构建**: 使用 Node.js 构建，Nginx 运行
+- **版本信息**: 包含 .git 目录用于版本追踪和调试
+- **静态优化**: 预编译的 SvelteKit 静态文件
+- **缓存优化**: 使用 pnpm 缓存加速构建
+
+#### 构建优化
+- 使用 Docker 构建缓存减少重复安装
+- 分离构建和运行环境减小镜像大小
+- 生产优化的静态资源压缩
+
 ### Nginx 配置
 Web 服务使用自定义 nginx.conf 文件，包含：
 - SvelteKit SPA 路由支持
@@ -102,6 +116,7 @@ Web 服务使用自定义 nginx.conf 文件，包含：
 1. **Web 构建失败**
    - 检查 `WEB_DEFAULT_API` 是否正确设置
    - 确保所有依赖都已安装
+   - 验证 .git 目录是否存在（版本信息需要）
 
 2. **API 连接问题**
    - 验证 API 服务是否运行在正确端口
@@ -109,6 +124,10 @@ Web 服务使用自定义 nginx.conf 文件，包含：
 
 3. **CORS 错误**
    - 确保 API 服务器的 CORS 配置允许 Web 域名
+
+4. **构建缓存问题**
+   - 清理 Docker 构建缓存: `docker builder prune`
+   - 强制重新构建: `docker-compose build --no-cache cobalt-web`
 
 ### 日志查看
 ```bash
@@ -118,9 +137,17 @@ docker-compose logs cobalt-web
 
 # 实时跟踪日志
 docker-compose logs -f cobalt-web
+
+# 查看构建日志
+docker-compose build cobalt-web
 ```
 
 ## 性能优化
+
+### 构建性能
+- 利用 Docker 层缓存
+- 使用 pnpm 包管理器的缓存机制
+- 多阶段构建减少最终镜像大小
 
 ### Nginx 优化
 - 启用 Gzip 压缩
@@ -148,6 +175,10 @@ deploy:
 ### 内容安全策略
 Web 服务配置了严格的 CSP 头，符合 Cobalt 的安全要求。
 
+### Git 目录安全
+- .git 目录仅用于版本信息，不暴露给外部访问
+- Nginx 配置阻止对隐藏文件的访问
+
 ### 更新策略
 - API: 使用官方镜像，定期更新
 - Web: 本地构建，从源代码构建最新版本
@@ -159,5 +190,6 @@ Web 服务配置了严格的 CSP 头，符合 Cobalt 的安全要求。
 - 响应时间
 - 资源使用情况
 - 错误率
+- 构建状态和时间
 
 可以集成 Grafana、Prometheus 或其他监控解决方案。 
